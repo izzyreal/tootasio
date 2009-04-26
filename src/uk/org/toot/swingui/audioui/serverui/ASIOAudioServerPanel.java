@@ -18,6 +18,7 @@ import uk.org.toot.audio.server.ASIOAudioServer;
 import uk.org.toot.audio.server.AudioServerConfiguration;
 import uk.org.toot.swing.SpringUtilities;
 
+@SuppressWarnings("serial")
 public class ASIOAudioServerPanel extends AbstractAudioServerPanel
 {
 	private ASIOAudioServer server;
@@ -62,7 +63,7 @@ public class ASIOAudioServerPanel extends AbstractAudioServerPanel
     }
 
     // @Override
-  	public void updatePeriodic() {
+  	protected void updatePeriodic() {
         if ( !isShowing() ) return;
     	sampleRateLabel.setText(String.valueOf((int)server.getSampleRate()));
     	sampleTypeLabel.setText(server.getSampleTypeName());
