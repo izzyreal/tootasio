@@ -311,11 +311,26 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 			}
 			name.append(' ');
 		}
-		return name.toString();
+		return name.toString().trim();
+	}
+	
+	protected String splitNames(String aname, boolean first) {
+		String[] parts = aname.split("\\s");
+		StringBuffer name = new StringBuffer();
+		for ( int i = 0; i < parts.length; i++) {
+			if ( !parts[i].contains("/") ) {
+				name.append(parts[i]);
+			} else {
+				String[] subparts = parts[i].split("/");
+				name.append(subparts[first ? 0 : 1]);
+			}
+			name.append(' ');
+		}
+		return name.toString().trim();
 	}
 	
 	protected void detectInputs() {
-		AsioChannelInfo info;
+		AsioChannelInfo info, info1;
 		String name0, name1;
 		int num = driver.getNumChannelsInput();
 //		System.out.println("Stereo ASIO Inputs");
@@ -328,16 +343,24 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 //			System.out.println(i+", "+name);
 		}
 //		System.out.println("Mono ASIO Inputs");
-		for ( int i = 0; i < num; i += 1 ) { // Mono
+		for ( int i = 0; i < num; i += 2 ) { // Mono
 			info = driver.getChannelInfoInput(i);
 			name0 = info.getChannelName();
+			info1 = driver.getChannelInfoInput(i+1);
+			name1 = info1.getChannelName();
+			if ( name0.equals(name1) ) {
+			    name0 = splitNames(name0, true);
+			    name1 = splitNames(name1, false);
+			}
 			availableInputs.add(new ASIONamedIO(name0, i, 1));
 //			System.out.println(i+", "+name0);
+			availableInputs.add(new ASIONamedIO(name0, i+1, 1));
+//			System.out.println((i+1)+", "+name1);
 		}
 	}
 	
 	protected void detectOutputs() {
-		AsioChannelInfo info;
+		AsioChannelInfo info, info1;
 		String name0, name1;
 		int num = driver.getNumChannelsOutput();
 //		System.out.println("Stereo ASIO Outputs");
@@ -349,13 +372,21 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 			availableOutputs.add(new ASIONamedIO(name, i, 2));
 //			System.out.println(i+", "+name);
 		}
-/*		System.out.println("Mono ASIO Outputs");
-		for ( int i = 0; i < num; i += 1 ) { // Mono
+//		System.out.println("Mono ASIO Outputs");
+		for ( int i = 0; i < num; i += 2 ) { // Mono
 			info = driver.getChannelInfoOutput(i);
 			name0 = info.getChannelName();
+			info1 = driver.getChannelInfoOutput(i+1);
+			name1 = info1.getChannelName();
+			if ( name0.equals(name1) ) {
+			    name0 = splitNames(name0, true);
+			    name1 = splitNames(name1, false);
+			}
 			availableOutputs.add(new ASIONamedIO(name0, i, 1));
-			System.out.println(i+", "+name0);
-		} */
+//			System.out.println(i+", "+name0);
+			availableOutputs.add(new ASIONamedIO(name0, i+1, 1));
+//			System.out.println((i+1)+", "+name1);
+		}
 	}
 	
 	protected class ASIONamedIO
