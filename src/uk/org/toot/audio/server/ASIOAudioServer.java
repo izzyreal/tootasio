@@ -17,14 +17,14 @@ import com.synthbot.jasiohost.*;
 public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 {
 	private AsioDriver driver;
-	private Set<AsioChannelInfo> activeChannels = new HashSet<AsioChannelInfo>();
+	private Set<AsioChannel> activeChannels = new HashSet<AsioChannel>();
 	private String driverName;
 	private String sampleTypeName = null;
 	private List<ASIONamedIO> availableInputs = new java.util.ArrayList<ASIONamedIO>();
 	private List<ASIONamedIO> availableOutputs = new java.util.ArrayList<ASIONamedIO>();
 	
 	public ASIOAudioServer(String driverName) {
-		driver = JAsioHost.getAsioDriver(driverName);
+		driver = AsioDriver.getDriver(driverName);
 		driver.addAsioDriverListener(new DriverListener());
 		bufferFrames = driver.getBufferPreferredSize();
 		this.driverName = driverName;
@@ -62,10 +62,10 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 	}
 
 	public boolean isRunning() {
-		return driver.getState().equals(AsioDriverState.RUNNING);
+		return driver.getCurrentState().equals(AsioDriverState.RUNNING);
 	}
 
-	protected void createSampleTypeName(AsioChannelInfo info) {
+	protected void createSampleTypeName(AsioChannel info) {
 		sampleTypeName = info.getSampleType().name().substring(6);
 	}
 	
@@ -96,13 +96,13 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 			}
 		}
 		IOAudioProcess process = null;
-		AsioChannelInfo info = driver.getChannelInfoInput(io.first);
+		AsioChannel info = driver.getChannelInput(io.first);
 		switch ( io.count ) {
 		case 1:
 		    process = new ASIOMonoInputProcess(label, info, io.name);
 			break;
 		default:
-			AsioChannelInfo info2 = driver.getChannelInfoInput(io.first+1);
+			AsioChannel info2 = driver.getChannelInput(io.first+1);
 		    process = new ASIOStereoInputProcess(label, info, info2, io.name);
 			break;
 		}
@@ -122,14 +122,14 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 			}
 		}
 		IOAudioProcess process = null;
-		AsioChannelInfo info = driver.getChannelInfoOutput(io.first);
+		AsioChannel info = driver.getChannelOutput(io.first);
 		if ( sampleTypeName == null ) createSampleTypeName(info);
 		switch ( io.count ) {
 /*		case 1:
 		    process = new ASIOMonoOutputProcess(label, info, io.name);
 			break; */
 		default:
-			AsioChannelInfo info2 = driver.getChannelInfoOutput(io.first+1);
+			AsioChannel info2 = driver.getChannelOutput(io.first+1);
 		    process = new ASIOStereoOutputProcess(label, info, info2);
 			break;
 		}
@@ -174,7 +174,7 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 
 	protected class DriverListener implements AsioDriverListener
 	{
-		public void bufferSwitch(long sampleTime, long samplePosition, Set<AsioChannelInfo> activeChannels) {
+		public void bufferSwitch(long sampleTime, long samplePosition, Set<AsioChannel> activeChannels) {
 			work();
 		}
 
@@ -203,10 +203,10 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 	protected abstract class ASIOProcess implements IOAudioProcess
 	{
 		private String name;
-		protected AsioChannelInfo info0, info1;
+		protected AsioChannel info0, info1;
 		protected ChannelFormat format;
 		
-		public ASIOProcess(String name, AsioChannelInfo info0, AsioChannelInfo info1) {
+		public ASIOProcess(String name, AsioChannel info0, AsioChannel info1) {
 			this.name = name;
 			this.info0 = info0;
 			this.info1 = info1; // may be null
@@ -241,7 +241,7 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 	{
 		private AudioBuffer.MetaInfo metaInfo;
 		
-		public ASIOMonoInputProcess(String name, AsioChannelInfo info0, String location) {
+		public ASIOMonoInputProcess(String name, AsioChannel info0, String location) {
 			super(name, info0, null);
             metaInfo = new AudioBuffer.MetaInfo(name, location);
 		}
@@ -260,7 +260,7 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 	{
 		private AudioBuffer.MetaInfo metaInfo;
 		
-		public ASIOStereoInputProcess(String name, AsioChannelInfo info0, AsioChannelInfo info1, String location) {
+		public ASIOStereoInputProcess(String name, AsioChannel info0, AsioChannel info1, String location) {
 			super(name, info0, info1);
             metaInfo = new AudioBuffer.MetaInfo(name, location);
 		}
@@ -278,7 +278,7 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 
 	protected class ASIOStereoOutputProcess extends ASIOProcess
 	{
-		public ASIOStereoOutputProcess(String name, AsioChannelInfo info0, AsioChannelInfo info1) {
+		public ASIOStereoOutputProcess(String name, AsioChannel info0, AsioChannel info1) {
 			super(name, info0, info1);
 		}
 
@@ -330,23 +330,23 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 	}
 	
 	protected void detectInputs() {
-		AsioChannelInfo info, info1;
+		AsioChannel info, info1;
 		String name0, name1;
 		int num = driver.getNumChannelsInput();
 //		System.out.println("Stereo ASIO Inputs");
 		for ( int i = 0; i < num; i += 2 ) { // Stereo
-			info = driver.getChannelInfoInput(i);
+			info = driver.getChannelInput(i);
 			name0 = info.getChannelName();
-			name1 = driver.getChannelInfoInput(i+1).getChannelName();
+			name1 = driver.getChannelInput(i+1).getChannelName();
 			String name = mergeNames(name0, name1);
 			availableInputs.add(new ASIONamedIO(name, i, 2));
 //			System.out.println(i+", "+name);
 		}
 //		System.out.println("Mono ASIO Inputs");
 		for ( int i = 0; i < num; i += 2 ) { // Mono
-			info = driver.getChannelInfoInput(i);
+			info = driver.getChannelInput(i);
 			name0 = info.getChannelName();
-			info1 = driver.getChannelInfoInput(i+1);
+			info1 = driver.getChannelInput(i+1);
 			name1 = info1.getChannelName();
 			if ( name0.equals(name1) ) {
 			    name0 = splitNames(name0, true);
@@ -360,23 +360,23 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 	}
 	
 	protected void detectOutputs() {
-		AsioChannelInfo info, info1;
+		AsioChannel info, info1;
 		String name0, name1;
 		int num = driver.getNumChannelsOutput();
 //		System.out.println("Stereo ASIO Outputs");
 		for ( int i = 0; i < num; i += 2 ) { // Stereo
-			info = driver.getChannelInfoOutput(i);
+			info = driver.getChannelOutput(i);
 			name0 = info.getChannelName();
-			name1 = driver.getChannelInfoOutput(i+1).getChannelName();
+			name1 = driver.getChannelOutput(i+1).getChannelName();
 			String name = mergeNames(name0, name1);
 			availableOutputs.add(new ASIONamedIO(name, i, 2));
 //			System.out.println(i+", "+name);
 		}
 //		System.out.println("Mono ASIO Outputs");
 		for ( int i = 0; i < num; i += 2 ) { // Mono
-			info = driver.getChannelInfoOutput(i);
+			info = driver.getChannelOutput(i);
 			name0 = info.getChannelName();
-			info1 = driver.getChannelInfoOutput(i+1);
+			info1 = driver.getChannelOutput(i+1);
 			name1 = info1.getChannelName();
 			if ( name0.equals(name1) ) {
 			    name0 = splitNames(name0, true);

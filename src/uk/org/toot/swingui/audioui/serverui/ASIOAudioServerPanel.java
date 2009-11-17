@@ -16,7 +16,7 @@ import javax.swing.SpringLayout;
 
 import uk.org.toot.audio.server.ASIOAudioServer;
 import uk.org.toot.audio.server.AudioServerConfiguration;
-import uk.org.toot.swing.SpringUtilities;
+import uk.org.toot.swingui.SpringUtilities;
 
 @SuppressWarnings("serial")
 public class ASIOAudioServerPanel extends AbstractAudioServerPanel

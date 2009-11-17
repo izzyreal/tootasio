@@ -20,7 +20,7 @@ public class ASIOAudioServerServiceProvider extends AudioServerServiceProvider
         super(ProviderId.TOOT_PROVIDER_ID, "Toot Software", "ASIO Audio Servers", "0.1");
         String osName = System.getProperty("os.name");
         if ( !osName.contains("Windows") ) return;
-    	List<String> driverNames = JAsioHost.getDriverNames();
+    	List<String> driverNames = AsioDriver.getDriverNames();
     	for ( String name : driverNames ) {
     		if ( name.startsWith("ASIO Multimedia") || 
     			 name.startsWith("ASIO DirectX") ) continue;
