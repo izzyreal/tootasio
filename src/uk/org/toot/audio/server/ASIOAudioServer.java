@@ -247,8 +247,8 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 		}
 
 		public int processAudio(AudioBuffer buffer) {
-            if ( !buffer.isRealTime() ) return AUDIO_DISCONNECT;
             buffer.setMetaInfo(metaInfo);
+            if ( !buffer.isRealTime() ) return AUDIO_DISCONNECT;
 			buffer.setChannelFormat(format);
 			info0.read(buffer.getChannel(0));
 			return AUDIO_OK;
@@ -266,8 +266,8 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 		}
 
 		public int processAudio(AudioBuffer buffer) {
-            if ( !buffer.isRealTime() ) return AUDIO_DISCONNECT;
             buffer.setMetaInfo(metaInfo);
+            if ( !buffer.isRealTime() ) return AUDIO_DISCONNECT;
 			buffer.setChannelFormat(format);
 			info0.read(buffer.getChannel(0));
 			info1.read(buffer.getChannel(1));
