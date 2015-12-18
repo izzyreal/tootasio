@@ -172,6 +172,10 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 		driver.disposeBuffers();
 	}
 
+	public void close() {
+	    activeChannels.clear();
+	}
+	
 	protected class DriverListener implements AsioDriverListener
 	{
 		public void bufferSwitch(long sampleTime, long samplePosition, Set<AsioChannel> activeChannels) {
