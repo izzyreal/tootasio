@@ -358,7 +358,7 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 			}
 			availableInputs.add(new ASIONamedIO(name0, i, 1));
 //			System.out.println(i+", "+name0);
-			availableInputs.add(new ASIONamedIO(name0, i+1, 1));
+			availableInputs.add(new ASIONamedIO(name1, i+1, 1));
 //			System.out.println((i+1)+", "+name1);
 		}
 	}
@@ -388,7 +388,7 @@ public class ASIOAudioServer extends AbstractAudioServer implements AudioServer
 			}
 			availableOutputs.add(new ASIONamedIO(name0, i, 1));
 //			System.out.println(i+", "+name0);
-			availableOutputs.add(new ASIONamedIO(name0, i+1, 1));
+			availableOutputs.add(new ASIONamedIO(name1, i+1, 1));
 //			System.out.println((i+1)+", "+name1);
 		}
 	}
